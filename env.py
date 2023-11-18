@@ -3,6 +3,8 @@ import gym
 from gym import spaces
 import numpy as np
 import random
+from pyBKT.models import Model
+import pickle
 
 
 emotions = ["anger", "surprise", "disgust", "enjoyment", "fear", "sadness"]
@@ -23,6 +25,16 @@ class StudentEnv(gym.Env):
 
         # Define initial state
         self.current_emotion = self.np_random.choice(len(emotions))
+
+        # Load trained knowledge model
+        self.knowledge_model = Model(seed=42)
+        self.knowledge_model.load("knowledge.pkl")
+
+        # Load trained emotions model
+        self.emotions_model = None
+
+        with open("emotions.pkl", "rb") as file:
+            self.emotions_model = pickle.load(file)
 
     def _get_obs(self):
         return self.current_emotion
