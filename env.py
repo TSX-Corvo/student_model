@@ -20,7 +20,8 @@ categories = [
 
 # Question ids for each skill, generated like this because the data is sorted by skill beforehand
 questions_by_category = {
-    cat: list(range((idx * 6) + 1, (idx + 1) * 6)) for idx, cat in enumerate(categories)
+    idx + 1: list(range((idx * 6) + 1, (idx + 1) * 6))
+    for idx, cat in enumerate(categories)
 }
 
 
@@ -79,11 +80,14 @@ class StudentEnv(gym.Env):
     def apply_rules(self, category: str) -> Tuple[int, str]:
         # Initialize simulated interaction
 
+        # print(category)
+
         student_id: int = 1  # fixed because of data
         question_id = np.random.randint(
-            questions_by_category[category][0], questions_by_category[category][-1]
+            questions_by_category[category + 1][0],
+            questions_by_category[category + 1][-1],
         )  # random question based on category
-        skill = categories.index(category) + 1
+        skill = category
 
         prior_correct = prior_data.loc[prior_data["question_id"] == question_id][
             "correct"
@@ -100,7 +104,13 @@ class StudentEnv(gym.Env):
             columns=column_labels,
         )
 
-        prediction = self.knowledge_model.predict(data=temp)
+        print(category)
+
+        try:
+            prediction = self.knowledge_model.predict(data=temp)
+        except:
+            prediction = {"correct_predictions": [0]}
+
         correct_chance = prediction["correct_predictions"][0]
 
         correct = 10 if random.random() < correct_chance else -5
