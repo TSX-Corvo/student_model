@@ -51,8 +51,3 @@ if __name__ == "__main__":
     train(env, agent, episodes)
     agent.render()
     env.close()
-
-    env = gym.make(ENVIRONMENT)
-    play(env, agent)
-
-    env.close()

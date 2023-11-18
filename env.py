@@ -9,34 +9,6 @@ emotions = ["anger", "surprise", "disgust", "enjoyment", "fear", "sadness"]
 
 categories = ["literature", "vocabulary", "idioms", "grammar"]
 
-# Define rules
-rules = {
-    ("sadness", "grammar"): {
-        "correct_chance": 0.7,
-        "next_emotion": {"happiness": 0.8, "fear": 0.2},
-    },
-    ("fear", "literature"): {
-        "correct_chance": 0.6,
-        "next_emotion": {"disgust": 0.7, "surprise": 0.3},
-    },
-    ("anger", "idioms"): {
-        "correct_chance": 0.8,
-        "next_emotion": {"anger": 0.1, "disgust": 0.6, "surprise": 0.3},
-    },
-    ("enjoyment", "vocabulary"): {
-        "correct_chance": 0.9,
-        "next_emotion": {"enjoyment": 0.5, "surprise": 0.5},
-    },
-    ("surprise", "grammar"): {
-        "correct_chance": 0.5,
-        "next_emotion": {"surprise": 0.4, "enjoyment": 0.6},
-    },
-    ("disgust", "idioms"): {
-        "correct_chance": 0.7,
-        "next_emotion": {"disgust": 0.3, "anger": 0.7},
-    },
-}
-
 
 class StudentEnv(gym.Env):
     metadata = {"render_modes": ["human"], "render_fps": 1}
