@@ -5,11 +5,28 @@ import numpy as np
 import random
 from pyBKT.models import Model
 import pickle
+import pandas as pd
 
 
-emotions = ["anger", "surprise", "disgust", "enjoyment", "fear", "sadness"]
+emotions = ["Ira", "Sorpresa", "Disgusto", "Disfrute", "Miedo", "Tristeza"]
 
-categories = ["literature", "vocabulary", "idioms", "grammar"]
+categories = [
+    "Ortografía y Gramática",
+    "Elementos Narrativos",
+    "Gramática y Sintaxis",
+    "Comunicación y Lenguaje",
+    "Figuras Literarias",
+]
+
+# Question ids for each skill, generated like this because the data is sorted by skill beforehand
+questions_by_category = {
+    cat: list(range((idx * 6) + 1, (idx + 1) * 6)) for idx, cat in enumerate(categories)
+}
+
+
+column_labels = ["student_id", "question_id", "skill", "correct"]
+
+prior_data = pd.read_csv("train_db.csv")
 
 
 class StudentEnv(gym.Env):
@@ -60,26 +77,42 @@ class StudentEnv(gym.Env):
         return self._get_obs(), correct, True, True, {}
 
     def apply_rules(self, category: str) -> Tuple[int, str]:
-        emotion = emotions[self.current_emotion]
+        # Initialize simulated interaction
 
-        rule: Dict[Tuple[str, str], dict] = rules.get((emotion, category), None)
-        if rule is not None:
-            correct_chance: float = rule["correct_chance"]
-            next_emotion_probs: Dict[str, float] = rule["next_emotion"]
+        student_id: int = 1  # fixed because of data
+        question_id = np.random.randint(
+            questions_by_category[category][0], questions_by_category[category][-1]
+        )  # random question based on category
+        skill = categories.index(category) + 1
 
-            # Determine correctness based on the chance
-            correct = 10 if random.random() < correct_chance else -5
+        prior_correct = prior_data.loc[prior_data["question_id"] == question_id][
+            "correct"
+        ].values[
+            0
+        ]  # Recall prior knowledge
 
-            # Determine the next emotion based on probabilities
-            next_emotion = random.choices(
-                list(next_emotion_probs.keys()),
-                weights=list(next_emotion_probs.values()),
-            )[0]
+        # Predict the correctness
 
-            return correct, next_emotion
-        else:
-            # Default case if there's no specific rule defined
-            return random.choice([10, -5]), random.choice(emotions)
+        obs = [student_id, question_id, skill, prior_correct]
+
+        temp = pd.DataFrame(
+            data=np.array([obs]),
+            columns=column_labels,
+        )
+
+        prediction = self.knowledge_model.predict(data=temp)
+        correct_chance = prediction["correct_predictions"][0]
+
+        correct = 10 if random.random() < correct_chance else -5
+
+        # Predict the emotion
+
+        next_emotion_val = self.emotions_model.predict([obs])[0]
+
+        next_emotion = emotions[next_emotion_val]
+
+        # Return (correct, emotion) pair
+        return correct, next_emotion
 
     def render(self):
         pass
