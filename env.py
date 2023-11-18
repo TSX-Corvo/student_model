@@ -20,8 +20,7 @@ categories = [
 
 # Question ids for each skill, generated like this because the data is sorted by skill beforehand
 questions_by_category = {
-    idx + 1: list(range((idx * 6) + 1, (idx + 1) * 6))
-    for idx, cat in enumerate(categories)
+    idx: list(range((idx * 6) + 1, (idx + 1) * 6)) for idx, cat in enumerate(categories)
 }
 
 
@@ -84,8 +83,8 @@ class StudentEnv(gym.Env):
 
         student_id: int = 1  # fixed because of data
         question_id = np.random.randint(
-            questions_by_category[category + 1][0],
-            questions_by_category[category + 1][-1],
+            questions_by_category[category][0],
+            questions_by_category[category][-1],
         )  # random question based on category
         skill = category
 
@@ -103,8 +102,6 @@ class StudentEnv(gym.Env):
             data=np.array([obs]),
             columns=column_labels,
         )
-
-        print(category)
 
         try:
             prediction = self.knowledge_model.predict(data=temp)
